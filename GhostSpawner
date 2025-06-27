@@ -1,4 +1,4 @@
- File: Scripts/Game/GameMode/VerifiedAssetWarfareSystem.c
+// File: Scripts/Game/GameMode/VerifiedAssetWarfareSystem.c
 // Using REAL verified asset IDs from user's 1.4.0.45 setup
 // 
 // FIXED: Removed undefined API calls:
@@ -647,8 +647,9 @@ class VerifiedBattalionController
             AIControlComponent aiControl = AIControlComponent.Cast(agentEntity.FindComponent(AIControlComponent));
             if (aiControl)
             {
-                // Future versions may allow explicit danger reporting and alertness control
-                // but for 1.4.0.45 we simply rely on perception settings
+                // Set danger event and alertness for aggressive combat
+                aiControl.ReportDangerEvent(vector.Zero, agentEntity);
+                aiControl.SetAlertnessLevel(EAIAlertnessLevel.ALERTED);
             }
             
             // Set weapon handling to ready state
