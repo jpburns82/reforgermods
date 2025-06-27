@@ -1,4 +1,4 @@
-// File: Scripts/Game/GameMode/VerifiedAssetWarfareSystem.c
+File: Scripts/Game/GameMode/VerifiedAssetWarfareSystem.c
 // Using REAL verified asset IDs from user's 1.4.0.45 setup
 // 
 // FIXED: Removed undefined API calls:
@@ -524,11 +524,11 @@ class VerifiedBattalionController
             }
             
             // Get character controller for combat stance
-           CharacterControllerComponent controller = CharacterControllerComponent.Cast(agentEntity.FindComponent(CharacterControllerComponent));
+            SCR_CharacterControllerComponent controller = SCR_CharacterControllerComponent.Cast(agentEntity.FindComponent(SCR_CharacterControllerComponent));
             if (controller)
             {
-                // Set to combat-ready stance
-                controller.SetStance(ECharacterStance.STAND);
+                // Set to combat-ready stance using supported API
+                controller.SetCharacterStance(ECharacterStance.STAND);
             }
         }
         
@@ -647,18 +647,8 @@ class VerifiedBattalionController
             AIControlComponent aiControl = AIControlComponent.Cast(agentEntity.FindComponent(AIControlComponent));
             if (aiControl)
             {
-                // Get the AI agent from control component
-                AIAgent controlAgent = aiControl.GetAIAgent();
-                if (controlAgent)
-                {
-                    // Set danger events to make AI more reactive
-                    controlAgent.SetDangerEvent(vector.Zero, agentEntity); // Alert AI to danger
-                }
-            }
-            
-            // Increase combat awareness
-                    controlAgent.SetAlertnessLevel(EAIAlertnessLevel.ALERTED);
-                }
+                // Future versions may allow explicit danger reporting and alertness control
+                // but for 1.4.0.45 we simply rely on perception settings
             }
             
             // Set weapon handling to ready state
