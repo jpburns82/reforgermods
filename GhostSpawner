@@ -451,7 +451,11 @@ class VerifiedBattalionController
         }
         
         string controller = targetTown.GetController();
-        string mission = (controller == m_sFactionKey) ? "DEFEND" : "CAPTURE";
+        string mission;
+        if (controller == m_sFactionKey)
+            mission = "DEFEND";
+        else
+            mission = "CAPTURE";
         
         PrintFormat("🎯 [VERIFIED-WAR] %1 verified mission: %2 %3", 
             m_sBattalionName, mission, targetTown.GetName());
