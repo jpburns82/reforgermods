@@ -523,12 +523,12 @@ class VerifiedBattalionController
                 perception.SetPerceptionFactor(2.0); // Double perception
             }
             
-            // Get character controller for combat stance
-            SCR_CharacterControllerComponent controller = SCR_CharacterControllerComponent.Cast(agentEntity.FindComponent(SCR_CharacterControllerComponent));
-            if (controller)
+            // Get stance component for combat posture
+            SCR_CharacterStanceComponent stanceComp = SCR_CharacterStanceComponent.Cast(agentEntity.FindComponent(SCR_CharacterStanceComponent));
+            if (stanceComp)
             {
-                // Set to combat-ready stance using supported API
-                controller.SetCharacterStance(ECharacterStance.STAND);
+                // Set to combat-ready stance
+                stanceComp.SetCharacterStance(ECharacterStance.STAND);
             }
         }
         
@@ -643,13 +643,16 @@ class VerifiedBattalionController
             if (!agentEntity)
                 continue;
                 
-            // Configure AI control component for aggressive behavior
+            // Configure aggressive behavior directly on the AI agent
             AIControlComponent aiControl = AIControlComponent.Cast(agentEntity.FindComponent(AIControlComponent));
             if (aiControl)
             {
-                // Set danger event and alertness for aggressive combat
-                aiControl.ReportDangerEvent(vector.Zero, agentEntity);
-                aiControl.SetAlertnessLevel(EAIAlertnessLevel.ALERTED);
+                AIAgent ctrlAgent = aiControl.GetAIAgent();
+                if (ctrlAgent)
+                {
+                    ctrlAgent.ReportDangerEvent(agentEntity.GetOrigin(), agentEntity);
+                    ctrlAgent.SetAlertnessLevel(EAIAlertnessLevel.ALERTED);
+                }
             }
             
             // Set weapon handling to ready state
