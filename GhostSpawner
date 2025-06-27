@@ -1,4 +1,4 @@
-File: Scripts/Game/GameMode/VerifiedAssetWarfareSystem.c
+ File: Scripts/Game/GameMode/VerifiedAssetWarfareSystem.c
 // Using REAL verified asset IDs from user's 1.4.0.45 setup
 // 
 // FIXED: Removed undefined API calls:
@@ -42,7 +42,7 @@ class VerifiedAssets
     static const ResourceName HELICOPTER_UH1H = "{70BAEEFC2D3FEE64}Prefabs/Vehicles/Helicopters/UH1H/UH1H.et";
     static const ResourceName ENTITY_SPAWNER = "{B58C34611D93DCA4}Prefabs/Logic/EntitySpawnerSlot.et";
     static const ResourceName SEIZING_TRIGGER = "{59A6F1EBC6C64F79}Prefabs/Logic/SeizingTrigger.et";
-}
+};
 
 modded class SCR_BaseGameMode
 {
@@ -241,7 +241,7 @@ modded class SCR_BaseGameMode
             m_aVerifiedMortars[i].FireVerifiedBarrage(m_aVerifiedTowns, m_aVerifiedBattalions);
         }
     }
-}
+};
 
 // Verified battalion controller using real assets
 class VerifiedBattalionController
@@ -773,7 +773,7 @@ class VerifiedBattalionController
     {
         return m_sFactionKey;
     }
-}
+};
 
 // Verified town control using real assets
 class VerifiedTownControl
@@ -911,7 +911,7 @@ class VerifiedTownControl
     {
         return m_sController;
     }
-}
+};
 
 // Verified mortar support using real 2B14 assets
 class VerifiedMortarSupport
@@ -1095,4 +1095,4 @@ class VerifiedMortarSupport
             SCR_EntityHelper.DeleteEntityAndChildren(impact);
         }
     }
-}
+};
