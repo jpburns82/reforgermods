@@ -1,4 +1,4 @@
-// File: Scripts/Game/GameMode/VerifiedAssetWarfareSystem.c
+File: Scripts/Game/GameMode/VerifiedAssetWarfareSystem.c
 // Using REAL verified asset IDs from user's 1.4.0.45 setup
 // 
 // FIXED: Removed undefined API calls:
