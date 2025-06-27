@@ -406,17 +406,26 @@ class VerifiedBattalionController
         
         if (agents.Count() > 0)
         {
-            PrintFormat("✅ [VERIFIED-WAR] %1 group has %2 verified soldiers", 
+            PrintFormat("✅ [VERIFIED-WAR] %1 group has %2 verified soldiers - ACTIVATING COMBAT", 
                 m_sBattalionName, agents.Count());
+                
+            // IMMEDIATELY activate combat behavior
+            GetGame().GetCallqueue().CallLater(ActivateAICombat, 2000, false, group);
         }
         else
         {
-            PrintFormat("⚠️ [VERIFIED-WAR] %1 group spawned empty - checking asset compatibility", 
-                m_sBattalionName);
+            PrintFormat("❌ [VERIFIED-WAR] %1 group spawned EMPTY - NO SOLDIERS FOUND! Asset: %2", 
+                m_sBattalionName, groupPrefab);
+                
+            // Try to respawn with different asset
+            GetGame().GetCallqueue().CallLater(DeployVerifiedGroup, 15000, false);
         }
         
         // Assign verified mission
         GetGame().GetCallqueue().CallLater(AssignVerifiedMission, 8000, false, group);
+        
+        // CRITICAL: Make AI groups actually move and fight
+        GetGame().GetCallqueue().CallLater(ActivateAICombat, 10000, false, group);
     }
     
     void AssignVerifiedMission(IEntity group)
@@ -462,6 +471,134 @@ class VerifiedBattalionController
         
         // Schedule next verified mission
         GetGame().GetCallqueue().CallLater(AssignVerifiedMission, 150000, false, group); // 2.5-minute missions
+    }
+    
+    // CRITICAL: Make AI groups actually move and fight
+    void ActivateAICombat(IEntity group)
+    {
+        if (!group || group.IsDeleted())
+            return;
+            
+        SCR_AIGroup aiGroup = SCR_AIGroup.Cast(group);
+        if (!aiGroup)
+            return;
+            
+        PrintFormat("⚔️ [VERIFIED-WAR] Activating AI combat for %1", m_sBattalionName);
+        
+        // Get all AI agents in the group
+        array<AIAgent> agents = new array<AIAgent>;
+        aiGroup.GetAgents(agents);
+        
+        if (agents.Count() == 0)
+        {
+            PrintFormat("❌ [VERIFIED-WAR] No AI agents found in group for %1", m_sBattalionName);
+            return;
+        }
+        
+        // Set combat behavior for each agent
+        for (int i = 0; i < agents.Count(); i++)
+        {
+            AIAgent agent = agents[i];
+            if (!agent)
+                continue;
+                
+            // Get the AI control component
+            SCR_AIInfoBaseComponent aiInfo = SCR_AIInfoBaseComponent.Cast(agent.GetControlledEntity().FindComponent(SCR_AIInfoBaseComponent));
+            if (aiInfo)
+            {
+                // Set to combat mode
+                aiInfo.SetAISkill(0.7); // Set skill level
+            }
+            
+            // Make them patrol and hunt enemies
+            AssignPatrolBehavior(agent);
+        }
+        
+        // Assign group waypoint to target area
+        AssignGroupWaypoint(aiGroup);
+    }
+    
+    void AssignPatrolBehavior(AIAgent agent)
+    {
+        if (!agent)
+            return;
+            
+        // Select a random town to patrol
+        if (m_aVerifiedTowns.Count() == 0)
+            return;
+            
+        VerifiedTownControl patrolTown = m_aVerifiedTowns[Math.RandomInt(0, m_aVerifiedTowns.Count())];
+        vector patrolPos = patrolTown.GetPosition();
+        
+        // Add some randomization to patrol position
+        patrolPos[0] = patrolPos[0] + Math.RandomFloat(-300, 300);
+        patrolPos[2] = patrolPos[2] + Math.RandomFloat(-300, 300);
+        
+        // Get surface Y
+        BaseWorld world = GetGame().GetWorld();
+        if (world)
+        {
+            float surfaceY = world.GetSurfaceY(patrolPos[0], patrolPos[2]);
+            if (surfaceY > -1000)
+                patrolPos[1] = surfaceY;
+            else
+                patrolPos[1] = 0;
+        }
+        
+        // Create waypoint for the agent
+        AIWaypoint waypoint = new AIWaypoint();
+        waypoint.SetPosition(patrolPos);
+        waypoint.SetCompletionRadius(50);
+        
+        // Get AI behavior tree and assign waypoint
+        BehaviorTreeComponent behaviorComp = agent.GetBehaviorTree();
+        if (behaviorComp)
+        {
+            // Set aggressive stance
+            behaviorComp.SetVariableIn("CombatType", 2); // Aggressive
+            behaviorComp.SetVariableIn("WeaponLowered", false);
+        }
+        
+        PrintFormat("🎯 [VERIFIED-WAR] %1 agent assigned patrol at %2", m_sBattalionName, patrolPos);
+    }
+    
+    void AssignGroupWaypoint(SCR_AIGroup aiGroup)
+    {
+        if (!aiGroup)
+            return;
+            
+        // Select enemy town to attack
+        VerifiedTownControl targetTown = SelectVerifiedTarget();
+        if (!targetTown)
+            return;
+            
+        vector targetPos = targetTown.GetPosition();
+        targetPos[0] = targetPos[0] + Math.RandomFloat(-200, 200);
+        targetPos[2] = targetPos[2] + Math.RandomFloat(-200, 200);
+        
+        // Get surface Y
+        BaseWorld world = GetGame().GetWorld();
+        if (world)
+        {
+            float surfaceY = world.GetSurfaceY(targetPos[0], targetPos[2]);
+            if (surfaceY > -1000)
+                targetPos[1] = surfaceY;
+            else
+                targetPos[1] = 0;
+        }
+        
+        // Create and assign waypoint to the group
+        AIWaypoint groupWaypoint = new AIWaypoint();
+        groupWaypoint.SetPosition(targetPos);
+        groupWaypoint.SetCompletionRadius(100);
+        
+        // Force the group to move to target
+        aiGroup.AddWaypoint(groupWaypoint);
+        
+        PrintFormat("🚁 [VERIFIED-WAR] %1 group moving to attack %2", m_sBattalionName, targetTown.GetName());
+        
+        // Schedule new waypoint assignment
+        GetGame().GetCallqueue().CallLater(AssignGroupWaypoint, 180000, false, aiGroup); // New waypoint every 3 minutes
     }
     
     VerifiedTownControl SelectVerifiedTarget()
