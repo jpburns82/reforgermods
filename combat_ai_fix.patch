@@ -1,0 +1,65 @@
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a/GhostSpawner b/GhostSpawner
+index df519baf873d5e466f6affbaa5703e533ec226ce..d053a0304a150d209a5249c152205894aeb97bd6 100644
+--- a/GhostSpawner
++++ b/GhostSpawner
+@@ -631,54 +631,52 @@ class VerifiedBattalionController
+             
+         // Get all agents and configure them for combat
+         array<AIAgent> agents = new array<AIAgent>;
+         aiGroup.GetAgents(agents);
+         
+         for (int i = 0; i < agents.Count(); i++)
+         {
+             AIAgent agent = agents[i];
+             if (!agent)
+                 continue;
+                 
+             IEntity agentEntity = agent.GetControlledEntity();
+             if (!agentEntity)
+                 continue;
+                 
+             // Configure AI control component for aggressive behavior
+             AIControlComponent aiControl = AIControlComponent.Cast(agentEntity.FindComponent(AIControlComponent));
+             if (aiControl)
+             {
+                 // Get the AI agent from control component
+                 AIAgent controlAgent = aiControl.GetAIAgent();
+                 if (controlAgent)
+                 {
+                     // Set danger events to make AI more reactive
+                     controlAgent.SetDangerEvent(vector.Zero, agentEntity); // Alert AI to danger
+-                }
+-            }
+-            
+-            // Increase combat awareness
++
++                    // Increase combat awareness
+                     controlAgent.SetAlertnessLevel(EAIAlertnessLevel.ALERTED);
+                 }
+             }
+             
+             // Set weapon handling to ready state
+             BaseWeaponManagerComponent weaponManager = BaseWeaponManagerComponent.Cast(agentEntity.FindComponent(BaseWeaponManagerComponent));
+             if (weaponManager)
+             {
+                 // Get current weapon and set to ready
+                 BaseWeaponComponent currentWeapon = weaponManager.GetCurrentWeapon();
+                 if (currentWeapon)
+                 {
+                     weaponManager.SelectWeapon(currentWeapon); // Ensure weapon is selected
+                 }
+             }
+         }
+         
+         PrintFormat("🔥 [VERIFIED-WAR] %1 AI configured for aggressive combat", m_sBattalionName);
+     }
+     
+     VerifiedTownControl SelectVerifiedTarget()
+     {
+         if (m_aVerifiedTowns.Count() == 0)
+             return null;
+             
+ 
+EOF
+)
