@@ -37,9 +37,9 @@ class VerifiedAssets
 
 modded class SCR_BaseGameMode
 {
-    protected ref array<ref VerifiedBattalionController> m_aVerifiedBattalions = {};
-    protected ref array<ref VerifiedTownControl> m_aVerifiedTowns = {};
-    protected ref array<ref VerifiedMortarSupport> m_aVerifiedMortars = {};
+    protected ref array<ref VerifiedBattalionController> m_aVerifiedBattalions;
+    protected ref array<ref VerifiedTownControl> m_aVerifiedTowns;
+    protected ref array<ref VerifiedMortarSupport> m_aVerifiedMortars;
     protected bool m_bVerifiedWarActive = false;
     protected bool m_bVerifiedWarInitialized = false;
     
@@ -83,7 +83,7 @@ modded class SCR_BaseGameMode
     
     void SetupVerifiedTowns()
     {
-        m_aVerifiedTowns = new array<ref VerifiedTownControl>();
+        m_aVerifiedTowns = new array<ref VerifiedTownControl>;
         
         // Major Everon towns with verified capture mechanics
         ref VerifiedTownControl morton = new VerifiedTownControl();
@@ -115,10 +115,10 @@ modded class SCR_BaseGameMode
     
     void SetupVerifiedBattalions()
     {
-        m_aVerifiedBattalions = new array<ref VerifiedBattalionController>();
+        m_aVerifiedBattalions = new array<ref VerifiedBattalionController>;
         
         // US BLUFOR Battalion with 3 group types
-        ref array<ResourceName> usGroups = new array<ResourceName>();
+        ref array<ResourceName> usGroups = new array<ResourceName>;
         usGroups.Insert(VerifiedAssets.GROUP_US_MG);
         usGroups.Insert(VerifiedAssets.GROUP_US_RIFLE);
         usGroups.Insert(VerifiedAssets.GROUP_US_ELITE);
@@ -128,7 +128,7 @@ modded class SCR_BaseGameMode
         m_aVerifiedBattalions.Insert(usBattalion);
         
         // FIA INDFOR Battalion with 3 group types
-        ref array<ResourceName> fiaGroups = new array<ResourceName>();
+        ref array<ResourceName> fiaGroups = new array<ResourceName>;
         fiaGroups.Insert(VerifiedAssets.GROUP_FIA_MG);
         fiaGroups.Insert(VerifiedAssets.GROUP_FIA_RECON);
         fiaGroups.Insert(VerifiedAssets.GROUP_FIA_RIFLE);
@@ -138,7 +138,7 @@ modded class SCR_BaseGameMode
         m_aVerifiedBattalions.Insert(fiaBattalion);
         
         // USSR OPFOR Battalion with 3 group types
-        ref array<ResourceName> ussrGroups = new array<ResourceName>();
+        ref array<ResourceName> ussrGroups = new array<ResourceName>;
         ussrGroups.Insert(VerifiedAssets.GROUP_USSR_MG);
         ussrGroups.Insert(VerifiedAssets.GROUP_USSR_RIFLE);
         ussrGroups.Insert(VerifiedAssets.GROUP_USSR_ELITE);
@@ -152,7 +152,7 @@ modded class SCR_BaseGameMode
     
     void SetupVerifiedMortars()
     {
-        m_aVerifiedMortars = new array<ref VerifiedMortarSupport>();
+        m_aVerifiedMortars = new array<ref VerifiedMortarSupport>;
         
         // Deploy REAL 2B14 mortars for each faction
         ref VerifiedMortarSupport usMortars = new VerifiedMortarSupport();
@@ -247,10 +247,10 @@ class VerifiedBattalionController
     
     void VerifiedBattalionController()
     {
-        m_aVerifiedGroupPrefabs = new array<ResourceName>();
-        m_aVerifiedTowns = new array<ref VerifiedTownControl>();
-        m_aActiveGroups = new array<IEntity>();
-        m_aMapMarkers = new array<IEntity>();
+        m_aVerifiedGroupPrefabs = new array<ResourceName>;
+        m_aVerifiedTowns = new array<ref VerifiedTownControl>;
+        m_aActiveGroups = new array<IEntity>;
+        m_aMapMarkers = new array<IEntity>;
         m_iGroupCounter = 1;
     }
     
@@ -288,11 +288,9 @@ class VerifiedBattalionController
         }
         
         VerifiedTownControl deployTown = m_aVerifiedTowns[Math.RandomInt(0, m_aVerifiedTowns.Count())];
-        vector deployPos = deployTown.GetPosition() + Vector(
-            Math.RandomFloat(-400, 400),
-            0,
-            Math.RandomFloat(-400, 400)
-        );
+        vector deployPos = deployTown.GetPosition();
+        deployPos[0] = deployPos[0] + Math.RandomFloat(-400, 400);
+        deployPos[2] = deployPos[2] + Math.RandomFloat(-400, 400);
         
         // Fix: Proper surface Y calculation with error handling
         BaseWorld world = GetGame().GetWorld();
@@ -352,7 +350,9 @@ class VerifiedBattalionController
     {
         EntitySpawnParams markerParams = new EntitySpawnParams();
         markerParams.TransformMode = ETransformMode.WORLD;
-        markerParams.Transform[3] = position + Vector(0, 5, 0); // 5m above ground
+        vector markerPos = position;
+        markerPos[1] = markerPos[1] + 5; // 5m above ground
+        markerParams.Transform[3] = markerPos;
         
         Resource markerResource = Resource.Load(VerifiedAssets.MAP_MARKER_SQUAD);
         if (markerResource)
@@ -401,7 +401,7 @@ class VerifiedBattalionController
         aiGroup.SetFaction(faction);
         
         // Verify AI agents are present
-        array<AIAgent> agents = {};
+        array<AIAgent> agents = new array<AIAgent>;
         aiGroup.GetAgents(agents);
         
         if (agents.Count() > 0)
@@ -435,11 +435,9 @@ class VerifiedBattalionController
             return;
         }
         
-        vector targetPos = targetTown.GetPosition() + Vector(
-            Math.RandomFloat(-150, 150),
-            0,
-            Math.RandomFloat(-150, 150)
-        );
+        vector targetPos = targetTown.GetPosition();
+        targetPos[0] = targetPos[0] + Math.RandomFloat(-150, 150);
+        targetPos[2] = targetPos[2] + Math.RandomFloat(-150, 150);
         
         // Fix: Proper surface Y calculation
         BaseWorld world = GetGame().GetWorld();
@@ -468,7 +466,7 @@ class VerifiedBattalionController
             return null;
             
         // Prefer enemy towns for attack
-        autoptr array<ref VerifiedTownControl> enemyTowns = {};
+        ref array<ref VerifiedTownControl> enemyTowns = new array<ref VerifiedTownControl>;
         
         for (int i = 0; i < m_aVerifiedTowns.Count(); i++)
         {
@@ -613,7 +611,9 @@ class VerifiedTownControl
     {
         EntitySpawnParams markerParams = new EntitySpawnParams();
         markerParams.TransformMode = ETransformMode.WORLD;
-        markerParams.Transform[3] = m_vPosition + Vector(0, 10, 0);
+        vector markerPos = m_vPosition;
+        markerPos[1] = markerPos[1] + 10;
+        markerParams.Transform[3] = markerPos;
         
         Resource markerResource = Resource.Load(VerifiedAssets.MAP_MARKER_BASE);
         if (markerResource)
@@ -639,7 +639,7 @@ class VerifiedTownControl
         if (battalions.Count() == 0)
             return;
             
-        autoptr array<string> factionPresence = {};
+        ref array<string> factionPresence = new array<string>;
         
         // Check verified forces in town
         for (int i = 0; i < battalions.Count(); i++)
@@ -720,7 +720,7 @@ class VerifiedMortarSupport
     void VerifiedMortarSupport()
     {
         m_fLastFire = 0.0;
-        m_aImpactEffects = new array<IEntity>();
+        m_aImpactEffects = new array<IEntity>;
     }
     
     void Initialize(string mortarName, string factionKey, vector position, float range)
@@ -783,7 +783,7 @@ class VerifiedMortarSupport
             return;
             
         // Find enemy towns in range
-        autoptr array<ref VerifiedTownControl> validTargets = {};
+        ref array<ref VerifiedTownControl> validTargets = new array<ref VerifiedTownControl>;
         
         for (int i = 0; i < towns.Count(); i++)
         {
@@ -821,11 +821,9 @@ class VerifiedMortarSupport
         // Fire 3-round barrage
         for (int i = 0; i < 3; i++)
         {
-            vector impactPos = targetPos + Vector(
-                Math.RandomFloat(-200, 200),
-                0,
-                Math.RandomFloat(-200, 200)
-            );
+            vector impactPos = targetPos;
+            impactPos[0] = impactPos[0] + Math.RandomFloat(-200, 200);
+            impactPos[2] = impactPos[2] + Math.RandomFloat(-200, 200);
             
             // Fix: Proper surface Y calculation
             BaseWorld world = GetGame().GetWorld();
