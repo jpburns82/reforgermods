@@ -1,5 +1,14 @@
 // File: Scripts/Game/GameMode/VerifiedAssetWarfareSystem.c
 // Using REAL verified asset IDs from user's 1.4.0.45 setup
+// 
+// FIXED: Removed undefined API calls:
+// - SCR_AIGroup.SetGroupState() doesn't exist - removed
+// - SCR_AICombatComponent.SetEngagementRange() doesn't exist - replaced with PerceptionComponent
+// 
+// AI combat behavior is now controlled through:
+// - PerceptionComponent.SetPerceptionFactor() to increase AI awareness
+// - SCR_CharacterControllerComponent for stance control
+// - Group waypoints for movement and objectives
 
 // VERIFIED ASSET CONFIGURATION
 class VerifiedAssets
@@ -344,6 +353,9 @@ class VerifiedBattalionController
         
         // Setup verified combat group
         GetGame().GetCallqueue().CallLater(SetupVerifiedCombatGroup, 5000, false, group);
+        
+        // Enable aggressive AI behavior through available components
+        GetGame().GetCallqueue().CallLater(EnableAggressiveAI, 7000, false, group);
     }
     
     void CreateVerifiedMapMarker(vector position)
@@ -414,8 +426,8 @@ class VerifiedBattalionController
         }
         else
         {
-            PrintFormat("❌ [VERIFIED-WAR] %1 group spawned EMPTY - NO SOLDIERS FOUND! Asset: %2", 
-                m_sBattalionName, groupPrefab);
+            PrintFormat("❌ [VERIFIED-WAR] %1 group spawned EMPTY - NO SOLDIERS FOUND!", 
+                m_sBattalionName);
                 
             // Try to respawn with different asset
             GetGame().GetCallqueue().CallLater(DeployVerifiedGroup, 15000, false);
@@ -423,9 +435,6 @@ class VerifiedBattalionController
         
         // Assign verified mission
         GetGame().GetCallqueue().CallLater(AssignVerifiedMission, 8000, false, group);
-        
-        // CRITICAL: Make AI groups actually move and fight
-        GetGame().GetCallqueue().CallLater(ActivateAICombat, 10000, false, group);
     }
     
     void AssignVerifiedMission(IEntity group)
@@ -502,64 +511,52 @@ class VerifiedBattalionController
             if (!agent)
                 continue;
                 
-            // Get the AI control component
-            SCR_AIInfoBaseComponent aiInfo = SCR_AIInfoBaseComponent.Cast(agent.GetControlledEntity().FindComponent(SCR_AIInfoBaseComponent));
-            if (aiInfo)
+            IEntity agentEntity = agent.GetControlledEntity();
+            if (!agentEntity)
+                continue;
+                
+            // Get perception component to make AI more aggressive
+            PerceptionComponent perception = PerceptionComponent.Cast(agentEntity.FindComponent(PerceptionComponent));
+            if (perception)
             {
-                // Set to combat mode
-                aiInfo.SetAISkill(0.7); // Set skill level
+                // Increase perception to make AI more aware and aggressive
+                perception.SetPerceptionFactor(2.0); // Double perception
             }
             
-            // Make them patrol and hunt enemies
-            AssignPatrolBehavior(agent);
+            // Get character controller for combat stance
+            SCR_CharacterControllerComponent controller = SCR_CharacterControllerComponent.Cast(agentEntity.FindComponent(SCR_CharacterControllerComponent));
+            if (controller)
+            {
+                // Set to combat-ready stance
+                controller.SetStance(ECharacterStance.STAND);
+            }
         }
         
         // Assign group waypoint to target area
         AssignGroupWaypoint(aiGroup);
+        
+        PrintFormat("✅ [VERIFIED-WAR] %1 combat activated - %2 soldiers ready", 
+            m_sBattalionName, agents.Count());
     }
     
     void AssignPatrolBehavior(AIAgent agent)
     {
+        // This method is simplified since group waypoints handle movement
         if (!agent)
             return;
             
-        // Select a random town to patrol
-        if (m_aVerifiedTowns.Count() == 0)
+        IEntity agentEntity = agent.GetControlledEntity();
+        if (!agentEntity)
             return;
             
-        VerifiedTownControl patrolTown = m_aVerifiedTowns[Math.RandomInt(0, m_aVerifiedTowns.Count())];
-        vector patrolPos = patrolTown.GetPosition();
-        
-        // Add some randomization to patrol position
-        patrolPos[0] = patrolPos[0] + Math.RandomFloat(-300, 300);
-        patrolPos[2] = patrolPos[2] + Math.RandomFloat(-300, 300);
-        
-        // Get surface Y
-        BaseWorld world = GetGame().GetWorld();
-        if (world)
+        // Set individual perception for better combat awareness
+        PerceptionComponent perception = PerceptionComponent.Cast(agentEntity.FindComponent(PerceptionComponent));
+        if (perception)
         {
-            float surfaceY = world.GetSurfaceY(patrolPos[0], patrolPos[2]);
-            if (surfaceY > -1000)
-                patrolPos[1] = surfaceY;
-            else
-                patrolPos[1] = 0;
+            perception.SetPerceptionFactor(1.5); // Increase perception by 50%
         }
         
-        // Create waypoint for the agent
-        AIWaypoint waypoint = new AIWaypoint();
-        waypoint.SetPosition(patrolPos);
-        waypoint.SetCompletionRadius(50);
-        
-        // Get AI behavior tree and assign waypoint
-        BehaviorTreeComponent behaviorComp = agent.GetBehaviorTree();
-        if (behaviorComp)
-        {
-            // Set aggressive stance
-            behaviorComp.SetVariableIn("CombatType", 2); // Aggressive
-            behaviorComp.SetVariableIn("WeaponLowered", false);
-        }
-        
-        PrintFormat("🎯 [VERIFIED-WAR] %1 agent assigned patrol at %2", m_sBattalionName, patrolPos);
+        PrintFormat("🎯 [VERIFIED-WAR] %1 agent combat behavior set", m_sBattalionName);
     }
     
     void AssignGroupWaypoint(SCR_AIGroup aiGroup)
@@ -587,18 +584,92 @@ class VerifiedBattalionController
                 targetPos[1] = 0;
         }
         
-        // Create and assign waypoint to the group
-        AIWaypoint groupWaypoint = new AIWaypoint();
-        groupWaypoint.SetPosition(targetPos);
-        groupWaypoint.SetCompletionRadius(100);
+        // Create assault waypoint using correct prefab
+        Resource wpResource = Resource.Load("{D5BB5F7BCDB0EF98}Prefabs/AI/Waypoints/AIWaypoint_Move.et");
+        if (!wpResource)
+        {
+            PrintFormat("❌ [VERIFIED-WAR] Failed to load waypoint prefab for %1", m_sBattalionName);
+            return;
+        }
         
-        // Force the group to move to target
-        aiGroup.AddWaypoint(groupWaypoint);
+        EntitySpawnParams params = new EntitySpawnParams();
+        params.TransformMode = ETransformMode.WORLD;
+        params.Transform[3] = targetPos;
         
-        PrintFormat("🚁 [VERIFIED-WAR] %1 group moving to attack %2", m_sBattalionName, targetTown.GetName());
+        IEntity waypoint = GetGame().SpawnEntityPrefab(wpResource, GetGame().GetWorld(), params);
+        if (!waypoint)
+        {
+            PrintFormat("❌ [VERIFIED-WAR] Failed to spawn waypoint for %1", m_sBattalionName);
+            return;
+        }
+        
+        // Assign waypoint to group
+        AIWaypoint aiWaypoint = AIWaypoint.Cast(waypoint);
+        if (aiWaypoint)
+        {
+            aiGroup.AddWaypoint(aiWaypoint);
+            PrintFormat("🚁 [VERIFIED-WAR] %1 group moving to attack %2", m_sBattalionName, targetTown.GetName());
+        }
+        else
+        {
+            PrintFormat("❌ [VERIFIED-WAR] Failed to cast waypoint for %1", m_sBattalionName);
+        }
         
         // Schedule new waypoint assignment
         GetGame().GetCallqueue().CallLater(AssignGroupWaypoint, 180000, false, aiGroup); // New waypoint every 3 minutes
+    }
+    
+    // Alternative method to enable aggressive AI behavior using available API
+    void EnableAggressiveAI(IEntity group)
+    {
+        if (!group || group.IsDeleted())
+            return;
+            
+        SCR_AIGroup aiGroup = SCR_AIGroup.Cast(group);
+        if (!aiGroup)
+            return;
+            
+        // Get all agents and configure them for combat
+        array<AIAgent> agents = new array<AIAgent>;
+        aiGroup.GetAgents(agents);
+        
+        for (int i = 0; i < agents.Count(); i++)
+        {
+            AIAgent agent = agents[i];
+            if (!agent)
+                continue;
+                
+            IEntity agentEntity = agent.GetControlledEntity();
+            if (!agentEntity)
+                continue;
+                
+            // Configure AI control component for aggressive behavior
+            AIControlComponent aiControl = AIControlComponent.Cast(agentEntity.FindComponent(AIControlComponent));
+            if (aiControl)
+            {
+                // Get the AI agent from control component
+                AIAgent controlAgent = aiControl.GetAIAgent();
+                if (controlAgent)
+                {
+                    // Set danger events to make AI more reactive
+                    controlAgent.SetDangerEvent(vector.Zero, agentEntity); // Alert AI to danger
+                }
+            }
+            
+            // Set weapon handling to ready state
+            BaseWeaponManagerComponent weaponManager = BaseWeaponManagerComponent.Cast(agentEntity.FindComponent(BaseWeaponManagerComponent));
+            if (weaponManager)
+            {
+                // Get current weapon and set to ready
+                BaseWeaponComponent currentWeapon = weaponManager.GetCurrentWeapon();
+                if (currentWeapon)
+                {
+                    weaponManager.SelectWeapon(currentWeapon); // Ensure weapon is selected
+                }
+            }
+        }
+        
+        PrintFormat("🔥 [VERIFIED-WAR] %1 AI configured for aggressive combat", m_sBattalionName);
     }
     
     VerifiedTownControl SelectVerifiedTarget()
