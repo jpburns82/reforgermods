@@ -524,7 +524,7 @@ class VerifiedBattalionController
             }
             
             // Get character controller for combat stance
-            SCR_CharacterControllerComponent controller = SCR_CharacterControllerComponent.Cast(agentEntity.FindComponent(SCR_CharacterControllerComponent));
+           CharacterControllerComponent controller = CharacterControllerComponent.Cast(agentEntity.FindComponent(CharacterControllerComponent));
             if (controller)
             {
                 // Set to combat-ready stance
@@ -653,6 +653,11 @@ class VerifiedBattalionController
                 {
                     // Set danger events to make AI more reactive
                     controlAgent.SetDangerEvent(vector.Zero, agentEntity); // Alert AI to danger
+                }
+            }
+            
+            // Increase combat awareness
+                    controlAgent.SetAlertnessLevel(EAIAlertnessLevel.ALERTED);
                 }
             }
             
