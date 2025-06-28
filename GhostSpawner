@@ -18,8 +18,10 @@ class VerifiedAssets
     static const ResourceName GROUP_USSR_RIFLE = "{30ED11AA4F0D41E5}Prefabs/Groups/OPFOR/Group_USSR_FireGroup.et";
     static const ResourceName GROUP_USSR_ELITE = "{B721D5A8C1B556CE}Prefabs/Groups/OPFOR/Spetsnaz/Suppressed/Group_USSR_Spetsnaz_ReconTeam.et";
     
-    // VERIFIED MORTAR ASSETS
-    static const ResourceName MORTAR_2B14 = "{D1FFE458E8AC4BDB}Prefabs/Weapons/Mortars/2B14/Mortar_2B14.et";
+    // VERIFIED MORTAR ASSETS - Multiple types for variety
+    static const ResourceName MORTAR_LARGE = "{1DDF7187608968F2}PrefabsEditable/EffectsModules/Mortar/EffectModule_Zoned_MortarBarrage_Large.et";
+    static const ResourceName MORTAR_COMBING = "{5E0F494A46B3B604}PrefabsEditable/EffectsModules/Mortar/EffectModule_Zoned_MortarBarrage_Combing.et";
+    static const ResourceName MORTAR_CREEPING = "{F5FAFFDBC271088C}PrefabsEditable/EffectsModules/Mortar/EffectModule_Zoned_MortarBarrage_Creeping.et";
     static const ResourceName MORTAR_DESTROYED_BASE = "{963D934DDAE5C819}Prefabs/Weapons/Mortars/2B14/2B14_Baseplate_Destroyed.et";
     static const ResourceName MORTAR_DESTROYED_CANNON = "{5FE766BC6D4424ED}Prefabs/Weapons/Mortars/2B14/2B14_Cannon_Destroyed.et";
     
@@ -40,12 +42,12 @@ modded class SCR_BaseGameMode
     protected bool m_bVerifiedWarActive = false;
     protected bool m_bVerifiedWarInitialized = false;
     
-    // Verified warfare settings
-    static const int VERIFIED_MAX_GROUPS = 4;
-    static const int VERIFIED_MAX_MORTARS = 2;
-    static const float VERIFIED_UPDATE_INTERVAL = 45.0;
-    static const float VERIFIED_REINFORCEMENT_DELAY = 90.0;
-    static const float VERIFIED_MORTAR_INTERVAL = 180.0;
+    // Enhanced warfare settings for more action
+    static const int VERIFIED_MAX_GROUPS = 8; // Doubled for more AI
+    static const int VERIFIED_MAX_MORTARS = 6; // More mortar positions
+    static const float VERIFIED_UPDATE_INTERVAL = 30.0; // Faster updates
+    static const float VERIFIED_REINFORCEMENT_DELAY = 45.0; // Faster reinforcements
+    static const float VERIFIED_MORTAR_INTERVAL = 60.0; // More frequent mortar fire
     
     override void EOnInit(IEntity owner)
     {
@@ -54,7 +56,7 @@ modded class SCR_BaseGameMode
         if (m_bVerifiedWarInitialized)
             return;
             
-        Print("🚀 [VERIFIED-WAR] Starting warfare with REAL verified assets...");
+        Print("🚀 [VERIFIED-WAR] Starting enhanced warfare with REAL verified assets...");
         GetGame().GetCallqueue().CallLater(InitVerifiedWarfare, 30000, false);
     }
     
@@ -64,7 +66,7 @@ modded class SCR_BaseGameMode
             return;
             
         m_bVerifiedWarInitialized = true;
-        Print("⚙️ [VERIFIED-WAR] Using 1.4.0.45 verified asset IDs...");
+        Print("⚙️ [VERIFIED-WAR] Using 1.4.0.45 verified asset IDs with enhanced combat...");
         
         SetupVerifiedTowns();
         SetupVerifiedBattalions();
@@ -75,7 +77,7 @@ modded class SCR_BaseGameMode
         GetGame().GetCallqueue().CallLater(VerifiedReinforcementWave, VERIFIED_REINFORCEMENT_DELAY * 1000, true);
         GetGame().GetCallqueue().CallLater(VerifiedMortarBarrage, VERIFIED_MORTAR_INTERVAL * 1000, true);
         
-        Print("✅ [VERIFIED-WAR] Real asset warfare system ready");
+        Print("✅ [VERIFIED-WAR] Enhanced warfare system ready with more AI and mortars");
     }
     
     void SetupVerifiedTowns()
@@ -84,7 +86,7 @@ modded class SCR_BaseGameMode
         
         // Major Everon towns with verified capture mechanics
         ref VerifiedTownControl morton = new VerifiedTownControl();
-        morton.Initialize("Morton", Vector(3817, 0, 4089), 300.0);
+        morton.Initialize("Morton", Vector(3817, 0, 4089), 350.0);
         m_aVerifiedTowns.Insert(morton);
         
         ref VerifiedTownControl saintPierre = new VerifiedTownControl();
@@ -92,7 +94,7 @@ modded class SCR_BaseGameMode
         m_aVerifiedTowns.Insert(saintPierre);
         
         ref VerifiedTownControl lamentin = new VerifiedTownControl();
-        lamentin.Initialize("Lamentin", Vector(4673, 0, 5942), 300.0);
+        lamentin.Initialize("Lamentin", Vector(4673, 0, 5942), 350.0);
         m_aVerifiedTowns.Insert(lamentin);
         
         ref VerifiedTownControl montignac = new VerifiedTownControl();
@@ -100,14 +102,31 @@ modded class SCR_BaseGameMode
         m_aVerifiedTowns.Insert(montignac);
         
         ref VerifiedTownControl provins = new VerifiedTownControl();
-        provins.Initialize("Provins", Vector(7234, 0, 4982), 300.0);
+        provins.Initialize("Provins", Vector(7234, 0, 4982), 350.0);
         m_aVerifiedTowns.Insert(provins);
         
         ref VerifiedTownControl leMoule = new VerifiedTownControl();
-        leMoule.Initialize("Le Moule", Vector(2876, 0, 5234), 250.0);
+        leMoule.Initialize("Le Moule", Vector(2876, 0, 5234), 300.0);
         m_aVerifiedTowns.Insert(leMoule);
         
-        PrintFormat("🏘️ [VERIFIED-WAR] %1 verified towns ready for capture", m_aVerifiedTowns.Count());
+        // Additional combat zones for more spread out action
+        ref VerifiedTownControl northOutpost = new VerifiedTownControl();
+        northOutpost.Initialize("North Outpost", Vector(4500, 0, 7200), 250.0);
+        m_aVerifiedTowns.Insert(northOutpost);
+        
+        ref VerifiedTownControl eastBase = new VerifiedTownControl();
+        eastBase.Initialize("East Base", Vector(8200, 0, 4500), 250.0);
+        m_aVerifiedTowns.Insert(eastBase);
+        
+        ref VerifiedTownControl westStation = new VerifiedTownControl();
+        westStation.Initialize("West Station", Vector(2200, 0, 4800), 250.0);
+        m_aVerifiedTowns.Insert(westStation);
+        
+        ref VerifiedTownControl southForward = new VerifiedTownControl();
+        southForward.Initialize("South Forward", Vector(5500, 0, 2800), 250.0);
+        m_aVerifiedTowns.Insert(southForward);
+        
+        PrintFormat("🏘️ [VERIFIED-WAR] %1 verified towns and combat zones ready", m_aVerifiedTowns.Count());
     }
     
     void SetupVerifiedBattalions()
@@ -144,27 +163,43 @@ modded class SCR_BaseGameMode
         ussrBattalion.Initialize("USSR_MOTOR_RIFLE", "USSR", ussrGroups, m_aVerifiedTowns);
         m_aVerifiedBattalions.Insert(ussrBattalion);
         
-        Print("🎖️ [VERIFIED-WAR] 3 battalions formed with verified group assets");
+        Print("🎖️ [VERIFIED-WAR] 3 enhanced battalions formed with verified group assets");
     }
     
     void SetupVerifiedMortars()
     {
         m_aVerifiedMortars = new array<ref VerifiedMortarSupport>;
         
-        // Deploy REAL 2B14 mortars for each faction
-        ref VerifiedMortarSupport usMortars = new VerifiedMortarSupport();
-        usMortars.Initialize("US_FIRE_SUPPORT", "US", Vector(3500, 0, 3800), 2500.0);
-        m_aVerifiedMortars.Insert(usMortars);
+        // Multiple mortar positions per faction for continuous bombardment
         
-        ref VerifiedMortarSupport fiaMortars = new VerifiedMortarSupport();
-        fiaMortars.Initialize("FIA_ARTILLERY", "FIA", Vector(6800, 0, 6400), 2500.0);
-        m_aVerifiedMortars.Insert(fiaMortars);
+        // US BLUFOR Mortars - 2 positions
+        ref VerifiedMortarSupport usMortars1 = new VerifiedMortarSupport();
+        usMortars1.Initialize("US_FIRE_SUPPORT_ALPHA", "US", Vector(3200, 0, 3600), 3000.0, VerifiedAssets.MORTAR_LARGE);
+        m_aVerifiedMortars.Insert(usMortars1);
         
-        ref VerifiedMortarSupport ussrMortars = new VerifiedMortarSupport();
-        ussrMortars.Initialize("USSR_FIRE_SUPPORT", "USSR", Vector(7500, 0, 5200), 2500.0);
-        m_aVerifiedMortars.Insert(ussrMortars);
+        ref VerifiedMortarSupport usMortars2 = new VerifiedMortarSupport();
+        usMortars2.Initialize("US_FIRE_SUPPORT_BRAVO", "US", Vector(3800, 0, 4200), 3000.0, VerifiedAssets.MORTAR_COMBING);
+        m_aVerifiedMortars.Insert(usMortars2);
         
-        Print("💥 [VERIFIED-WAR] Real 2B14 mortar support deployed");
+        // FIA INDFOR Mortars - 2 positions
+        ref VerifiedMortarSupport fiaMortars1 = new VerifiedMortarSupport();
+        fiaMortars1.Initialize("FIA_ARTILLERY_ALPHA", "FIA", Vector(6600, 0, 6200), 3000.0, VerifiedAssets.MORTAR_CREEPING);
+        m_aVerifiedMortars.Insert(fiaMortars1);
+        
+        ref VerifiedMortarSupport fiaMortars2 = new VerifiedMortarSupport();
+        fiaMortars2.Initialize("FIA_ARTILLERY_BRAVO", "FIA", Vector(7000, 0, 6600), 3000.0, VerifiedAssets.MORTAR_LARGE);
+        m_aVerifiedMortars.Insert(fiaMortars2);
+        
+        // USSR OPFOR Mortars - 2 positions
+        ref VerifiedMortarSupport ussrMortars1 = new VerifiedMortarSupport();
+        ussrMortars1.Initialize("USSR_FIRE_SUPPORT_ALPHA", "USSR", Vector(7300, 0, 5000), 3000.0, VerifiedAssets.MORTAR_COMBING);
+        m_aVerifiedMortars.Insert(ussrMortars1);
+        
+        ref VerifiedMortarSupport ussrMortars2 = new VerifiedMortarSupport();
+        ussrMortars2.Initialize("USSR_FIRE_SUPPORT_BRAVO", "USSR", Vector(7700, 0, 5400), 3000.0, VerifiedAssets.MORTAR_CREEPING);
+        m_aVerifiedMortars.Insert(ussrMortars2);
+        
+        PrintFormat("💥 [VERIFIED-WAR] %1 mortar positions deployed for continuous bombardment", m_aVerifiedMortars.Count());
     }
     
     void StartVerifiedWarfare()
@@ -173,15 +208,15 @@ modded class SCR_BaseGameMode
             return;
             
         m_bVerifiedWarActive = true;
-        Print("⚔️ [VERIFIED-WAR] 24/7 VERIFIED ASSET WARFARE ACTIVE!");
+        Print("⚔️ [VERIFIED-WAR] 24/7 ENHANCED VERIFIED ASSET WARFARE ACTIVE!");
         
         // Staggered battalion deployment
         for (int i = 0; i < m_aVerifiedBattalions.Count(); i++)
         {
-            GetGame().GetCallqueue().CallLater(m_aVerifiedBattalions[i].CommenceVerifiedOperations, i * 20000, false);
+            GetGame().GetCallqueue().CallLater(m_aVerifiedBattalions[i].CommenceVerifiedOperations, i * 15000, false);
         }
         
-        Print("🎯 [VERIFIED-WAR] Verified battalions deploying with real assets");
+        Print("🎯 [VERIFIED-WAR] Enhanced battalions deploying with more AI groups");
     }
     
     void UpdateVerifiedWarfare()
@@ -201,7 +236,7 @@ modded class SCR_BaseGameMode
             m_aVerifiedBattalions[i].UpdateVerifiedOperations();
         }
         
-        Print("📊 [VERIFIED-WAR] Verified warfare status update");
+        Print("📊 [VERIFIED-WAR] Enhanced warfare status update");
     }
     
     void VerifiedReinforcementWave()
@@ -209,7 +244,7 @@ modded class SCR_BaseGameMode
         if (!m_bVerifiedWarActive)
             return;
             
-        Print("🚁 [VERIFIED-WAR] Verified reinforcement wave - real assets incoming");
+        Print("🚁 [VERIFIED-WAR] Enhanced reinforcement wave - more assets incoming");
         
         for (int i = 0; i < m_aVerifiedBattalions.Count(); i++)
         {
@@ -222,7 +257,7 @@ modded class SCR_BaseGameMode
         if (!m_bVerifiedWarActive)
             return;
             
-        Print("💥 [VERIFIED-WAR] Real 2B14 mortar barrage cycle");
+        Print("💥 [VERIFIED-WAR] Continuous mortar barrage cycle - multiple types firing");
         
         for (int i = 0; i < m_aVerifiedMortars.Count(); i++)
         {
@@ -231,7 +266,7 @@ modded class SCR_BaseGameMode
     }
 };
 
-// Verified battalion controller using real assets
+// Enhanced battalion controller using real assets
 class VerifiedBattalionController
 {
     protected string m_sBattalionName;
@@ -258,17 +293,17 @@ class VerifiedBattalionController
         m_aVerifiedGroupPrefabs = groupPrefabs;
         m_aVerifiedTowns = towns;
         
-        PrintFormat("🎖️ [VERIFIED-WAR] %1 (%2) verified battalion ready", battalionName, factionKey);
+        PrintFormat("🎖️ [VERIFIED-WAR] %1 (%2) enhanced battalion ready", battalionName, factionKey);
     }
     
     void CommenceVerifiedOperations()
     {
-        PrintFormat("🚀 [VERIFIED-WAR] %1 commencing verified operations", m_sBattalionName);
+        PrintFormat("🚀 [VERIFIED-WAR] %1 commencing enhanced operations", m_sBattalionName);
         
-        // Deploy verified groups
+        // Deploy more verified groups for enhanced combat
         for (int i = 0; i < SCR_BaseGameMode.VERIFIED_MAX_GROUPS; i++)
         {
-            GetGame().GetCallqueue().CallLater(DeployVerifiedGroup, i * 12000, false);
+            GetGame().GetCallqueue().CallLater(DeployVerifiedGroup, i * 8000, false); // Faster deployment
         }
     }
     
@@ -286,8 +321,10 @@ class VerifiedBattalionController
         
         VerifiedTownControl deployTown = m_aVerifiedTowns[Math.RandomInt(0, m_aVerifiedTowns.Count())];
         vector deployPos = deployTown.GetPosition();
-        deployPos[0] = deployPos[0] + Math.RandomFloat(-400, 400);
-        deployPos[2] = deployPos[2] + Math.RandomFloat(-400, 400);
+        
+        // Enhanced spread - groups deploy further from towns for more coverage
+        deployPos[0] = deployPos[0] + Math.RandomFloat(-800, 800); // Doubled spread
+        deployPos[2] = deployPos[2] + Math.RandomFloat(-800, 800);
         
         // Fix: Proper surface Y calculation with error handling
         BaseWorld world = GetGame().GetWorld();
@@ -309,7 +346,7 @@ class VerifiedBattalionController
         
         ResourceName groupPrefab = m_aVerifiedGroupPrefabs[Math.RandomInt(0, m_aVerifiedGroupPrefabs.Count())];
         
-        PrintFormat("🪖 [VERIFIED-WAR] %1 deploying verified group %2 near %3", 
+        PrintFormat("🪖 [VERIFIED-WAR] %1 deploying enhanced group %2 near %3", 
             m_sBattalionName, m_iGroupCounter, deployTown.GetName());
         
         // Spawn verified group
@@ -334,7 +371,7 @@ class VerifiedBattalionController
         m_aActiveGroups.Insert(group);
         m_iGroupCounter++;
         
-        PrintFormat("✅ [VERIFIED-WAR] %1 verified group deployed successfully", m_sBattalionName);
+        PrintFormat("✅ [VERIFIED-WAR] %1 enhanced group deployed successfully", m_sBattalionName);
         
         // Create map marker for visibility
         GetGame().GetCallqueue().CallLater(CreateVerifiedMapMarker, 2000, false, deployPos);
@@ -374,7 +411,7 @@ class VerifiedBattalionController
             return;
         }
             
-        PrintFormat("⚔️ [VERIFIED-WAR] Setting up verified combat for %1", m_sBattalionName);
+        PrintFormat("⚔️ [VERIFIED-WAR] Setting up enhanced combat for %1", m_sBattalionName);
         
         // Fix: Proper faction assignment with null checks
         FactionManager factionManager = GetGame().GetFactionManager();
@@ -406,7 +443,7 @@ class VerifiedBattalionController
         
         if (agents.Count() > 0)
         {
-            PrintFormat("✅ [VERIFIED-WAR] %1 group has %2 verified soldiers - ACTIVATING COMBAT", 
+            PrintFormat("✅ [VERIFIED-WAR] %1 group has %2 verified soldiers - ACTIVATING ENHANCED COMBAT", 
                 m_sBattalionName, agents.Count());
                 
             // IMMEDIATELY activate combat behavior
@@ -418,11 +455,11 @@ class VerifiedBattalionController
                 m_sBattalionName);
                 
             // Try to respawn with different asset
-            GetGame().GetCallqueue().CallLater(DeployVerifiedGroup, 15000, false);
+            GetGame().GetCallqueue().CallLater(DeployVerifiedGroup, 10000, false); // Faster retry
         }
         
         // Assign verified mission
-        GetGame().GetCallqueue().CallLater(AssignVerifiedMission, 8000, false, group);
+        GetGame().GetCallqueue().CallLater(AssignVerifiedMission, 6000, false, group);
     }
     
     void AssignVerifiedMission(IEntity group)
@@ -442,8 +479,8 @@ class VerifiedBattalionController
         }
         
         vector targetPos = targetTown.GetPosition();
-        targetPos[0] = targetPos[0] + Math.RandomFloat(-150, 150);
-        targetPos[2] = targetPos[2] + Math.RandomFloat(-150, 150);
+        targetPos[0] = targetPos[0] + Math.RandomFloat(-200, 200); // Wider target area
+        targetPos[2] = targetPos[2] + Math.RandomFloat(-200, 200);
         
         // Fix: Proper surface Y calculation
         BaseWorld world = GetGame().GetWorld();
@@ -463,11 +500,11 @@ class VerifiedBattalionController
         else
             mission = "CAPTURE";
         
-        PrintFormat("🎯 [VERIFIED-WAR] %1 verified mission: %2 %3", 
+        PrintFormat("🎯 [VERIFIED-WAR] %1 enhanced mission: %2 %3", 
             m_sBattalionName, mission, targetTown.GetName());
         
-        // Schedule next verified mission
-        GetGame().GetCallqueue().CallLater(AssignVerifiedMission, 150000, false, group); // 2.5-minute missions
+        // Schedule next verified mission - faster rotation
+        GetGame().GetCallqueue().CallLater(AssignVerifiedMission, 120000, false, group); // 2-minute missions
     }
     
     // CRITICAL: Make AI groups actually move and fight
@@ -480,7 +517,7 @@ class VerifiedBattalionController
         if (!aiGroup)
             return;
             
-        PrintFormat("⚔️ [VERIFIED-WAR] Activating AI combat for %1", m_sBattalionName);
+        PrintFormat("⚔️ [VERIFIED-WAR] Activating enhanced AI combat for %1", m_sBattalionName);
         
         // Get all AI agents in the group
         array<AIAgent> agents = new array<AIAgent>;
@@ -492,7 +529,7 @@ class VerifiedBattalionController
             return;
         }
         
-        // Set combat behavior for each agent - FIXED VERSION
+        // Set enhanced combat behavior for each agent
         for (int i = 0; i < agents.Count(); i++)
         {
             AIAgent agent = agents[i];
@@ -507,18 +544,15 @@ class VerifiedBattalionController
             PerceptionComponent perception = PerceptionComponent.Cast(agentEntity.FindComponent(PerceptionComponent));
             if (perception)
             {
-                // Increase perception to make AI more aware and aggressive
-                perception.SetPerceptionFactor(2.0); // Double perception
+                // Enhanced perception for more aggressive AI
+                perception.SetPerceptionFactor(2.5); // Even higher perception
             }
-            
-            // REMOVED: SCR_CharacterStanceComponent usage - not available in current API
-            // The AI will use default combat stances
         }
         
         // Assign group waypoint to target area
         AssignGroupWaypoint(aiGroup);
         
-        PrintFormat("✅ [VERIFIED-WAR] %1 combat activated - %2 soldiers ready", 
+        PrintFormat("✅ [VERIFIED-WAR] %1 enhanced combat activated - %2 soldiers ready", 
             m_sBattalionName, agents.Count());
     }
     
@@ -536,10 +570,10 @@ class VerifiedBattalionController
         PerceptionComponent perception = PerceptionComponent.Cast(agentEntity.FindComponent(PerceptionComponent));
         if (perception)
         {
-            perception.SetPerceptionFactor(1.5); // Increase perception by 50%
+            perception.SetPerceptionFactor(2.0); // Enhanced perception
         }
         
-        PrintFormat("🎯 [VERIFIED-WAR] %1 agent combat behavior set", m_sBattalionName);
+        PrintFormat("🎯 [VERIFIED-WAR] %1 agent enhanced behavior set", m_sBattalionName);
     }
     
     void AssignGroupWaypoint(SCR_AIGroup aiGroup)
@@ -553,8 +587,8 @@ class VerifiedBattalionController
             return;
             
         vector targetPos = targetTown.GetPosition();
-        targetPos[0] = targetPos[0] + Math.RandomFloat(-200, 200);
-        targetPos[2] = targetPos[2] + Math.RandomFloat(-200, 200);
+        targetPos[0] = targetPos[0] + Math.RandomFloat(-300, 300); // Wider combat area
+        targetPos[2] = targetPos[2] + Math.RandomFloat(-300, 300);
         
         // Get surface Y
         BaseWorld world = GetGame().GetWorld();
@@ -598,11 +632,11 @@ class VerifiedBattalionController
             PrintFormat("❌ [VERIFIED-WAR] Failed to cast waypoint for %1", m_sBattalionName);
         }
         
-        // Schedule new waypoint assignment
-        GetGame().GetCallqueue().CallLater(AssignGroupWaypoint, 180000, false, aiGroup); // New waypoint every 3 minutes
+        // Schedule new waypoint assignment - faster movement
+        GetGame().GetCallqueue().CallLater(AssignGroupWaypoint, 150000, false, aiGroup); // New waypoint every 2.5 minutes
     }
     
-    // Alternative method to enable aggressive AI behavior using available API - FIXED VERSION
+    // Alternative method to enable aggressive AI behavior using available API
     void EnableAggressiveAI(IEntity group)
     {
         if (!group || group.IsDeleted())
@@ -612,7 +646,7 @@ class VerifiedBattalionController
         if (!aiGroup)
             return;
             
-        // Get all agents and configure them for combat
+        // Get all agents and configure them for enhanced combat
         array<AIAgent> agents = new array<AIAgent>;
         aiGroup.GetAgents(agents);
         
@@ -633,8 +667,7 @@ class VerifiedBattalionController
                 AIAgent ctrlAgent = aiControl.GetAIAgent();
                 if (ctrlAgent)
                 {
-                    // REMOVED: ReportDangerEvent and SetAlertnessLevel - not available in current API
-                    // The AI will use default alertness behavior
+                    // Enhanced AI behavior setup
                 }
             }
             
@@ -651,7 +684,7 @@ class VerifiedBattalionController
             }
         }
         
-        PrintFormat("🔥 [VERIFIED-WAR] %1 AI configured for aggressive combat", m_sBattalionName);
+        PrintFormat("🔥 [VERIFIED-WAR] %1 AI configured for enhanced combat", m_sBattalionName);
     }
     
     VerifiedTownControl SelectVerifiedTarget()
@@ -694,13 +727,12 @@ class VerifiedBattalionController
             IEntity group = m_aActiveGroups[i];
             if (!group || group.IsDeleted())
             {
-                PrintFormat("💀 [VERIFIED-WAR] %1 verified group eliminated", m_sBattalionName);
+                PrintFormat("💀 [VERIFIED-WAR] %1 enhanced group eliminated", m_sBattalionName);
                 m_aActiveGroups.RemoveOrdered(i);
             }
         }
     }
     
-    // Fix: Add marker cleanup
     void CleanupVerifiedMarkers()
     {
         for (int i = m_aMapMarkers.Count() - 1; i >= 0; i--)
@@ -721,14 +753,14 @@ class VerifiedBattalionController
         if (currentGroups < maxGroups)
         {
             int reinforcements = maxGroups - currentGroups;
-            reinforcements = Math.Min(reinforcements, 2); // Max 2 at once
+            reinforcements = Math.Min(reinforcements, 3); // More reinforcements at once
             
             for (int i = 0; i < reinforcements; i++)
             {
-                GetGame().GetCallqueue().CallLater(DeployVerifiedGroup, i * 10000, false);
+                GetGame().GetCallqueue().CallLater(DeployVerifiedGroup, i * 6000, false); // Faster deployment
             }
             
-            PrintFormat("🚁 [VERIFIED-WAR] %1 deploying %2 verified reinforcements", 
+            PrintFormat("🚁 [VERIFIED-WAR] %1 deploying %2 enhanced reinforcements", 
                 m_sBattalionName, reinforcements);
         }
     }
@@ -738,7 +770,7 @@ class VerifiedBattalionController
         int activeGroups = m_aActiveGroups.Count();
         int maxGroups = SCR_BaseGameMode.VERIFIED_MAX_GROUPS;
         
-        PrintFormat("📊 [VERIFIED-WAR] %1 verified status: %2/%3 groups operational", 
+        PrintFormat("📊 [VERIFIED-WAR] %1 enhanced status: %2/%3 groups operational", 
             m_sBattalionName, activeGroups, maxGroups);
     }
     
@@ -762,7 +794,7 @@ class VerifiedBattalionController
     }
 };
 
-// Verified town control using real assets
+// Enhanced town control using real assets
 class VerifiedTownControl
 {
     protected string m_sTownName;
@@ -798,7 +830,7 @@ class VerifiedTownControl
         // Create town marker
         CreateTownMarker();
         
-        PrintFormat("🏘️ [VERIFIED-WAR] Verified town %1 ready for capture", townName);
+        PrintFormat("🏘️ [VERIFIED-WAR] Enhanced town %1 ready for capture", townName);
     }
     
     void CreateTownMarker()
@@ -844,16 +876,16 @@ class VerifiedTownControl
             }
         }
         
-        // Update verified capture status
+        // Update verified capture status - faster capture for more dynamic warfare
         if (factionPresence.Count() == 1)
         {
             string dominantFaction = factionPresence[0];
             
             if (dominantFaction != m_sController)
             {
-                m_fCaptureProgress += 1.0;
+                m_fCaptureProgress += 1.5; // Faster capture progress
                 
-                if (m_fCaptureProgress >= 8.0) // 6-minute capture (8 updates at 45s intervals)
+                if (m_fCaptureProgress >= 6.0) // 3-minute capture (6 updates at 30s intervals)
                 {
                     string oldController = m_sController;
                     m_sController = dominantFaction;
@@ -864,7 +896,7 @@ class VerifiedTownControl
                 }
                 else
                 {
-                    PrintFormat("⚔️ [VERIFIED-WAR] %1 capture progress: %2/8 by %3", 
+                    PrintFormat("⚔️ [VERIFIED-WAR] %1 capture progress: %2/6 by %3", 
                         m_sTownName, m_fCaptureProgress, dominantFaction);
                 }
             }
@@ -900,29 +932,33 @@ class VerifiedTownControl
     }
 };
 
-// Verified mortar support using real 2B14 assets
+// Enhanced mortar support with continuous firing
 class VerifiedMortarSupport
 {
     protected string m_sMortarName;
     protected string m_sFactionKey;
     protected vector m_vPosition;
     protected float m_fRange;
+    protected ResourceName m_MortarType;
     protected IEntity m_MortarPiece;
     protected float m_fLastFire;
     protected ref array<IEntity> m_aImpactEffects;
+    protected bool m_bContinuousFire;
     
     void VerifiedMortarSupport()
     {
         m_fLastFire = 0.0;
         m_aImpactEffects = new array<IEntity>;
+        m_bContinuousFire = true;
     }
     
-    void Initialize(string mortarName, string factionKey, vector position, float range)
+    void Initialize(string mortarName, string factionKey, vector position, float range, ResourceName mortarType)
     {
         m_sMortarName = mortarName;
         m_sFactionKey = factionKey;
         m_vPosition = position;
         m_fRange = range;
+        m_MortarType = mortarType;
         
         // Fix: Proper surface Y calculation
         BaseWorld world = GetGame().GetWorld();
@@ -935,33 +971,38 @@ class VerifiedMortarSupport
                 m_vPosition[1] = 0;
         }
         
-        // Spawn real 2B14 mortar
-        SpawnReal2B14Mortar();
+        // Start continuous mortar spawning
+        SpawnMortarBarrage();
         
-        PrintFormat("💥 [VERIFIED-WAR] %1 real 2B14 mortar deployed at %2", mortarName, m_vPosition);
+        PrintFormat("💥 [VERIFIED-WAR] %1 continuous mortar system deployed at %2", mortarName, m_vPosition);
     }
     
-    void SpawnReal2B14Mortar()
+    void SpawnMortarBarrage()
     {
         EntitySpawnParams mortarParams = new EntitySpawnParams();
         mortarParams.TransformMode = ETransformMode.WORLD;
         mortarParams.Transform[3] = m_vPosition;
         
-        Resource mortarResource = Resource.Load(VerifiedAssets.MORTAR_2B14);
+        Resource mortarResource = Resource.Load(m_MortarType);
         if (!mortarResource)
         {
-            PrintFormat("❌ [VERIFIED-WAR] Failed to load 2B14 mortar resource for %1", m_sMortarName);
+            PrintFormat("❌ [VERIFIED-WAR] Failed to load mortar resource for %1", m_sMortarName);
             return;
         }
         
-        m_MortarPiece = GetGame().SpawnEntityPrefab(mortarResource, GetGame().GetWorld(), mortarParams);
-        if (m_MortarPiece)
+        IEntity mortar = GetGame().SpawnEntityPrefab(mortarResource, GetGame().GetWorld(), mortarParams);
+        if (mortar)
         {
-            PrintFormat("✅ [VERIFIED-WAR] Real 2B14 mortar spawned for %1", m_sMortarName);
+            PrintFormat("✅ [VERIFIED-WAR] Mortar barrage spawned for %1", m_sMortarName);
+            
+            // Schedule the next mortar spawn after this one despawns
+            GetGame().GetCallqueue().CallLater(SpawnMortarBarrage, 45000, false); // Respawn every 45 seconds
         }
         else
         {
-            PrintFormat("❌ [VERIFIED-WAR] Failed to spawn 2B14 mortar for %1", m_sMortarName);
+            PrintFormat("❌ [VERIFIED-WAR] Failed to spawn mortar for %1", m_sMortarName);
+            // Retry spawning if failed
+            GetGame().GetCallqueue().CallLater(SpawnMortarBarrage, 10000, false);
         }
     }
     
@@ -970,10 +1011,10 @@ class VerifiedMortarSupport
         if (towns.Count() == 0 || battalions.Count() == 0)
             return;
             
-        // Fix: Proper time calculation using GetWorld().GetWorldTime() in milliseconds
+        // Reduced cooldown for more frequent firing
         float currentTime = GetGame().GetWorld().GetWorldTime();
         
-        if (currentTime - m_fLastFire < 120000) // 2-minute cooldown in milliseconds
+        if (currentTime - m_fLastFire < 45000) // 45-second cooldown
             return;
             
         // Find enemy towns in range
@@ -993,31 +1034,48 @@ class VerifiedMortarSupport
             }
         }
         
+        // Also target any area with activity
+        if (validTargets.Count() == 0)
+        {
+            // Fire at neutral towns too for more action
+            for (int i = 0; i < towns.Count(); i++)
+            {
+                if (!towns[i])
+                    continue;
+                    
+                float distance = vector.Distance(m_vPosition, towns[i].GetPosition());
+                if (distance <= m_fRange)
+                {
+                    validTargets.Insert(towns[i]);
+                }
+            }
+        }
+        
         if (validTargets.Count() > 0)
         {
             VerifiedTownControl target = validTargets[Math.RandomInt(0, validTargets.Count())];
             
-            PrintFormat("💥 [VERIFIED-WAR] %1 2B14 firing barrage at %2!", 
+            PrintFormat("💥 [VERIFIED-WAR] %1 continuous barrage at %2!", 
                 m_sMortarName, target.GetName());
             
-            FireReal2B14Barrage(target);
+            FireContinuousBarrage(target);
             m_fLastFire = currentTime;
         }
     }
     
-    void FireReal2B14Barrage(VerifiedTownControl target)
+    void FireContinuousBarrage(VerifiedTownControl target)
     {
         if (!target)
             return;
             
         vector targetPos = target.GetPosition();
         
-        // Fire 3-round barrage
-        for (int i = 0; i < 3; i++)
+        // Fire 5-round enhanced barrage for more action
+        for (int i = 0; i < 5; i++)
         {
             vector impactPos = targetPos;
-            impactPos[0] = impactPos[0] + Math.RandomFloat(-200, 200);
-            impactPos[2] = impactPos[2] + Math.RandomFloat(-200, 200);
+            impactPos[0] = impactPos[0] + Math.RandomFloat(-300, 300); // Wider impact area
+            impactPos[2] = impactPos[2] + Math.RandomFloat(-300, 300);
             
             // Fix: Proper surface Y calculation
             BaseWorld world = GetGame().GetWorld();
@@ -1030,19 +1088,19 @@ class VerifiedMortarSupport
                     impactPos[1] = 0;
             }
             
-            GetGame().GetCallqueue().CallLater(Create2B14Impact, i * 3000, false, impactPos);
+            GetGame().GetCallqueue().CallLater(CreateMortarImpact, i * 2000, false, impactPos); // Faster impacts
         }
     }
     
-    void Create2B14Impact(vector position)
+    void CreateMortarImpact(vector position)
     {
-        // Create realistic mortar impact effect
+        // Create mortar impact effect
         EntitySpawnParams impactParams = new EntitySpawnParams();
         impactParams.TransformMode = ETransformMode.WORLD;
         impactParams.Transform[3] = position;
         
-        // Create destroyed mortar piece as impact effect (realistic battlefield debris)
-        Resource impactResource = Resource.Load(VerifiedAssets.MORTAR_DESTROYED_BASE);
+        // Use the specific mortar type for impact
+        Resource impactResource = Resource.Load(m_MortarType);
         if (!impactResource)
         {
             PrintFormat("❌ [VERIFIED-WAR] Failed to load impact effect resource");
@@ -1052,13 +1110,13 @@ class VerifiedMortarSupport
         IEntity impact = GetGame().SpawnEntityPrefab(impactResource, GetGame().GetWorld(), impactParams);
         if (impact)
         {
-            PrintFormat("💥 [VERIFIED-WAR] 2B14 impact at %1", position);
+            PrintFormat("💥 [VERIFIED-WAR] Mortar impact at %1", position);
             
             // Add to tracking array
             m_aImpactEffects.Insert(impact);
             
-            // Remove impact after 30 seconds
-            GetGame().GetCallqueue().CallLater(RemoveImpactEffect, 30000, false, impact);
+            // Remove impact after 20 seconds for continuous action
+            GetGame().GetCallqueue().CallLater(RemoveImpactEffect, 20000, false, impact);
         }
         else
         {
@@ -1076,7 +1134,7 @@ class VerifiedMortarSupport
         if (index != -1)
             m_aImpactEffects.RemoveOrdered(index);
             
-        // Fix: Use proper entity deletion
+        // Use proper entity deletion
         if (impact)
         {
             SCR_EntityHelper.DeleteEntityAndChildren(impact);
